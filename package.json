@@ -1,0 +1,23 @@
+{
+  "name": "reliance-playwright",
+  "version": "1.0.0",
+  "description": "Playwright BDD automation for Reliance Jewels",
+  "scripts": {
+    "test": "npx cucumber-js --config cucumber.config.js",
+    "test:headed": "cross-env HEADED=true npx cucumber-js --config cucumber.config.js",
+    "report": "npx cucumber-js --config cucumber.config.js"
+  },
+  "devDependencies": {
+    "@cucumber/cucumber": "^10.0.0",
+    "@playwright/test": "^1.40.0",
+    "@types/node": "^20.0.0",
+    "@types/winston": "^2.4.4",
+    "cross-env": "^7.0.3",
+    "ts-node": "^10.9.0",
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "exceljs": "^4.3.0",
+    "winston": "^3.19.0"
+  }
+}
