@@ -1,7 +1,7 @@
 import { Page } from '@playwright/test';
 import { PlaywrightHelper } from '../utils/PlaywrightHelper';
 import { ExcelReader } from '../utils/ExcelReader';
-import { PendentsLocators } from '../uistore/PendentsLocators';
+import { PendentsLocators, HomePageLocators } from '../uistore/PendentsLocators';
 import logger from '../utils/Logger';
 
 export class BuyPendentsPage {
@@ -16,9 +16,11 @@ export class BuyPendentsPage {
 
   async hoverOverPendents(): Promise<void> {
     logger.info('========== hoverOverPendents STARTED ==========');
-    const giftingUrl = 'https://www.reliancejewels.com/pendant-26-pendant-set/category:158/filter_Occasion:%28%22Gifting%22%29/';
-    logger.info(`Navigating to PENDANTS Gifting category | URL: "${giftingUrl}"`);
-    await this.page.goto(giftingUrl, { waitUntil: 'domcontentloaded' });
+    logger.info(`Hovering over PENDANTS menu | Selector: "${HomePageLocators.pendent}"`);
+    await this.helper.hoverOnElement(HomePageLocators.pendent);
+    logger.info(`Clicking on Gifting category | Selector: "${HomePageLocators.gift}"`);
+    await this.helper.waitUntilElementIsVisible(HomePageLocators.gift, 10);
+    await this.helper.clickElement(HomePageLocators.gift);
     const data = await ExcelReader.readCellValue('RingsAndPendant', '4', 'Items');
     logger.info(`Excel data fetched for URL verification | Expected keyword: "${data}"`);
     const url = this.helper.getCurrentUrl();
@@ -30,7 +32,10 @@ export class BuyPendentsPage {
 
   async genderFilter(): Promise<void> {
     logger.info('========== genderFilter STARTED ==========');
-    await this.page.goto('https://www.reliancejewels.com/pendant-26-pendant-set/category:158/filter_Occasion:%28%22Gifting%22%29/filter_Gender:%28%22Kids%22%29/');
+    logger.info(`Opening Gender filter | Selector: "${PendentsLocators.Gender}"`);
+    await this.helper.clickElement(PendentsLocators.Gender);
+    logger.info(`Clicking Kids option | Selector: "${PendentsLocators.kids}"`);
+    await this.helper.clickElement(PendentsLocators.kids);
     const title = await this.helper.getPageTitle();
     const actual = await ExcelReader.readCellValue('RingsAndPendant', '5', 'Actual');
     const description = await ExcelReader.readCellValue('RingsAndPendant', '5', 'Description');
@@ -41,7 +46,12 @@ export class BuyPendentsPage {
 
   async moreFilter(): Promise<void> {
     logger.info('========== moreFilter STARTED ==========');
-    await this.page.goto('https://www.reliancejewels.com/pendant-26-pendant-set/category:158/filter_Occasion:%28%22Gifting%22%29/filter_Gender:%28%22Kids%22%29/filter_Type:%28%22Pendant%22%29/');
+    logger.info(`Clicking More filters | Selector: "${PendentsLocators.moreFilter}"`);
+    await this.helper.clickElement(PendentsLocators.moreFilter);
+    logger.info(`Opening Type filter | Selector: "${PendentsLocators.type}"`);
+    await this.helper.clickElement(PendentsLocators.type);
+    logger.info(`Clicking Pendant option | Selector: "${PendentsLocators.pendentInsideType}"`);
+    await this.helper.clickElement(PendentsLocators.pendentInsideType);
     logger.info('========== moreFilter COMPLETED ==========');
   }
 
