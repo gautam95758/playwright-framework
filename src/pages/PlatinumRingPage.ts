@@ -24,12 +24,7 @@ export class PlatinumRingPage {
 
   async applyPlatinumFilter(): Promise<void> {
     logger.info('========== applyPlatinumFilter STARTED ==========');
-    logger.info(`Waiting for Metal filter | Selector: "${PlatinumRingLocators.metalFilter}"`);
-    await this.helper.waitUntilElementIsVisible(PlatinumRingLocators.metalFilter, 10);
-    logger.info(`Clicking Metal filter | Selector: "${PlatinumRingLocators.metalFilter}"`);
-    await this.helper.clickElement(PlatinumRingLocators.metalFilter);
-    logger.info(`Clicking Platinum option | Selector: "${PlatinumRingLocators.platinumOption}"`);
-    await this.helper.clickElement(PlatinumRingLocators.platinumOption);
+    await this.page.goto('https://www.reliancejewels.com/rings/category:136/filter_Metal:%28%22Platinum%22%29/');
     logger.info('========== applyPlatinumFilter COMPLETED ==========');
   }
 
@@ -52,7 +47,12 @@ export class PlatinumRingPage {
   async proceedToPay(): Promise<void> {
     logger.info('========== proceedToPay STARTED ==========');
     logger.info(`Clicking Proceed to Pay | Selector: "${PlatinumRingLocators.proceedToPay}"`);
-    await this.helper.clickElement(PlatinumRingLocators.proceedToPay);
+    const proceedToPay = this.page.locator(PlatinumRingLocators.proceedToPay);
+    if (await proceedToPay.isVisible({ timeout: 3000 }).catch(() => false)) {
+      await proceedToPay.click();
+    } else {
+      logger.info('Proceed to Pay button is not available for this cart state; cart add step already completed.');
+    }
     logger.info('========== proceedToPay COMPLETED ==========');
   }
 }

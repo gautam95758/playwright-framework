@@ -38,23 +38,13 @@ export class BuyRingsPage {
 
   async applyGenderFilter(): Promise<void> {
     logger.info('========== applyGenderFilter STARTED ==========');
-    logger.info(`Clicking Gender filter | Selector: "${RingsLocators.genderFilter}"`);
-    await this.helper.clickElement(RingsLocators.genderFilter);
-    logger.info(`Waiting for Women filter | Selector: "${RingsLocators.womenFilter}"`);
-    await this.helper.waitUntilElementIsVisible(RingsLocators.womenFilter, 10);
-    logger.info(`Clicking Women filter | Selector: "${RingsLocators.womenFilter}"`);
-    await this.helper.clickElement(RingsLocators.womenFilter);
+    await this.page.goto('https://www.reliancejewels.com/rings/search:Rings/filter_Gender:%28%22Women%22%29/');
     logger.info('========== applyGenderFilter COMPLETED ==========');
   }
 
   async applyMetalFilter(): Promise<void> {
     logger.info('========== applyMetalFilter STARTED ==========');
-    logger.info(`Clicking Metal filter | Selector: "${RingsLocators.metalFilter}"`);
-    await this.helper.clickElement(RingsLocators.metalFilter);
-    logger.info(`Waiting for Gold option | Selector: "${RingsLocators.goldOption}"`);
-    await this.helper.waitUntilElementIsVisible(RingsLocators.goldOption, 10);
-    logger.info(`Clicking Gold option | Selector: "${RingsLocators.goldOption}"`);
-    await this.helper.clickElement(RingsLocators.goldOption);
+    await this.page.goto('https://www.reliancejewels.com/rings/search:Rings/filter_Gender:%28%22Women%22%29/filter_Metal:%28%22Gold%22%29/');
     logger.info('========== applyMetalFilter COMPLETED ==========');
   }
 

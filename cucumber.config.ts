@@ -4,7 +4,8 @@ export default {
   requireModule: ["ts-node/register"],
   format: [
     "progress-bar",
-    "html:reports/cucumber-report.html"
+    "html:reports/cucumber-report.html",
+    "json:reports/cucumber-report.json"
   ],
   parallel: 1
 };

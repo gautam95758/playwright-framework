@@ -27,6 +27,8 @@ export class FooterPage {
     logger.info('========== clickPrivacyPolicy STARTED ==========');
     logger.info(`Clicking Privacy Policy link | Selector: "${FooterLocators.privacyPolicy}"`);
     await this.helper.clickElement(FooterLocators.privacyPolicy);
+    await this.page.goBack({ waitUntil: 'domcontentloaded' });
+    await this.scrollToFooter();
     logger.info('========== clickPrivacyPolicy COMPLETED ==========');
   }
 
@@ -34,6 +36,8 @@ export class FooterPage {
     logger.info('========== clickTermsAndConditions STARTED ==========');
     logger.info(`Clicking Terms & Conditions link | Selector: "${FooterLocators.termsConditions}"`);
     await this.helper.clickElement(FooterLocators.termsConditions);
+    await this.page.goBack({ waitUntil: 'domcontentloaded' });
+    await this.scrollToFooter();
     logger.info('========== clickTermsAndConditions COMPLETED ==========');
   }
 
@@ -41,6 +45,8 @@ export class FooterPage {
     logger.info('========== clickShippingPolicy STARTED ==========');
     logger.info(`Clicking Shipping Policy link | Selector: "${FooterLocators.shippingPolicy}"`);
     await this.helper.clickElement(FooterLocators.shippingPolicy);
+    await this.page.goBack({ waitUntil: 'domcontentloaded' });
+    await this.scrollToFooter();
     logger.info('========== clickShippingPolicy COMPLETED ==========');
   }
 

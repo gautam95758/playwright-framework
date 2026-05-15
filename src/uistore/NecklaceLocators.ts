@@ -1,5 +1,5 @@
 export const NecklaceLocators = {
-  necklaceMenu:       "xpath=//a[text()='NECKLACES']",
+  necklaceMenu:       "xpath=(//a[contains(@class,'dropdown-toggle') and normalize-space()='Necklaces'])[1]",
   firstProduct:       "xpath=(//a[@class='tooltip_18'])[1]",
   addToCart:          "div[id='btnBuyNowC'][class='btnaddtocart']",
   myCart:             "a[href='/cart']",

@@ -12,6 +12,6 @@ export const PendentsLocators = {
 
 export const HomePageLocators = {
   searchBarLocator: "input[placeholder='What are you searching for?']",
-  pendent:          "a[href*='pendant' i]",
-  gift:             "a[href*='pendant'][href*='Gifting']",
+  pendent:          "xpath=(//a[contains(@class,'dropdown-toggle') and normalize-space()='PENDANTS'])[1]",
+  gift:             "xpath=(//a[contains(@href,'category:158') and contains(@href,'Gifting') and normalize-space()='Gifting'])[1]",
 };

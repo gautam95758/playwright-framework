@@ -1,5 +1,6 @@
 import { Page, Locator } from '@playwright/test';
 import logger from './Logger';
+import { geminiFailureAnalyzer } from './GeminiFailureAnalyzer';
 
 export class PlaywrightHelper {
   private page: Page;
@@ -16,6 +17,7 @@ export class PlaywrightHelper {
       logger.info(`Element is now visible | Selector: "${selector}"`);
     } catch (e) {
       logger.error(`Element NOT visible after ${timeoutInSeconds}s | Selector: "${selector}" | Error: ${(e as Error).message}`);
+      await this.analyzeLocatorFailure('waitUntilElementIsVisible', selector, e as Error);
       throw e;
     }
   }
@@ -28,6 +30,7 @@ export class PlaywrightHelper {
       logger.info(`Successfully clicked element | Selector: "${selector}" | Text: "${text.trim()}"`);
     } catch (e) {
       logger.error(`Failed to click element | Selector: "${selector}" | Error: ${(e as Error).message}`);
+      await this.analyzeLocatorFailure('clickElement', selector, e as Error);
       throw e;
     }
   }
@@ -39,6 +42,7 @@ export class PlaywrightHelper {
       logger.info(`Successfully typed into element | Selector: "${selector}" | Value: "${text}"`);
     } catch (e) {
       logger.error(`Failed to type into element | Selector: "${selector}" | Error: ${(e as Error).message}`);
+      await this.analyzeLocatorFailure('typeIntoElement', selector, e as Error);
       throw e;
     }
   }
@@ -51,6 +55,7 @@ export class PlaywrightHelper {
       return text;
     } catch (e) {
       logger.error(`Failed to retrieve text | Selector: "${selector}" | Error: ${(e as Error).message}`);
+      await this.analyzeLocatorFailure('retrieveElementText', selector, e as Error);
       throw e;
     }
   }
@@ -62,6 +67,7 @@ export class PlaywrightHelper {
       logger.info(`Successfully pressed ENTER key | Selector: "${selector}"`);
     } catch (e) {
       logger.error(`Failed to press ENTER key | Selector: "${selector}" | Error: ${(e as Error).message}`);
+      await this.analyzeLocatorFailure('pressEnterKey', selector, e as Error);
       throw e;
     }
   }
@@ -74,6 +80,7 @@ export class PlaywrightHelper {
       logger.info(`Successfully hovered over element | Selector: "${selector}" | Text: "${text.trim()}"`);
     } catch (e) {
       logger.error(`Failed to hover over element | Selector: "${selector}" | Error: ${(e as Error).message}`);
+      await this.analyzeLocatorFailure('hoverOnElement', selector, e as Error);
       throw e;
     }
   }
@@ -150,6 +157,7 @@ export class PlaywrightHelper {
       logger.info(`Successfully scrolled element into view | Selector: "${selector}"`);
     } catch (e) {
       logger.error(`Failed to scroll element into view | Selector: "${selector}" | Error: ${(e as Error).message}`);
+      await this.analyzeLocatorFailure('scrollInWebPageTillVisible', selector, e as Error);
       throw e;
     }
   }
@@ -162,6 +170,7 @@ export class PlaywrightHelper {
       logger.info(`Successfully performed JavaScript click | Selector: "${selector}"`);
     } catch (e) {
       logger.error(`Failed JavaScript click | Selector: "${selector}" | Error: ${(e as Error).message}`);
+      await this.analyzeLocatorFailure('javascriptExecutorClick', selector, e as Error);
       throw e;
     }
   }
@@ -173,6 +182,7 @@ export class PlaywrightHelper {
       logger.info(`Successfully cleared input field | Selector: "${selector}"`);
     } catch (e) {
       logger.error(`Failed to clear input field | Selector: "${selector}" | Error: ${(e as Error).message}`);
+      await this.analyzeLocatorFailure('clearTextInputField', selector, e as Error);
       throw e;
     }
   }
@@ -192,7 +202,7 @@ export class PlaywrightHelper {
     logger.info(`Verifying condition is TRUE | Description: "${description}" | Condition: ${condition}`);
     if (!condition) {
       logger.error(`ASSERTION FAILED | Description: "${description}" | Condition was false`);
-      throw new Error(`[FAIL] ${description} — condition was false`);
+      throw new Error(`[FAIL] ${description} - condition was false`);
     }
     logger.info(`ASSERTION PASSED | Description: "${description}"`);
   }
@@ -201,7 +211,7 @@ export class PlaywrightHelper {
     logger.info(`Verifying condition is FALSE | Description: "${description}" | Condition: ${condition}`);
     if (condition) {
       logger.error(`ASSERTION FAILED | Description: "${description}" | Condition was true (expected false)`);
-      throw new Error(`[FAIL] ${description} — condition was true (expected false)`);
+      throw new Error(`[FAIL] ${description} - condition was true (expected false)`);
     }
     logger.info(`ASSERTION PASSED | Description: "${description}"`);
   }
@@ -251,5 +261,14 @@ export class PlaywrightHelper {
       logger.error(`Failed to take screenshot | Name: "${name}" | Error: ${(e as Error).message}`);
       throw e;
     }
+  }
+
+  private async analyzeLocatorFailure(action: string, selector: string, error: Error): Promise<void> {
+    await geminiFailureAnalyzer.analyzeLocatorFailure({
+      page: this.page,
+      action,
+      selector,
+      error,
+    });
   }
 }

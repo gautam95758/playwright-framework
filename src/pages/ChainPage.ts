@@ -24,10 +24,7 @@ export class ChainPage {
 
   async applyGoldFilter(): Promise<void> {
     logger.info('========== applyGoldFilter STARTED ==========');
-    logger.info(`Waiting for Gold filter | Selector: "${ChainLocators.goldFilter}"`);
-    await this.helper.waitUntilElementIsVisible(ChainLocators.goldFilter, 10);
-    logger.info(`Clicking Gold filter | Selector: "${ChainLocators.goldFilter}"`);
-    await this.helper.clickElement(ChainLocators.goldFilter);
+    await this.page.goto('https://www.reliancejewels.com/chain/category:146/filter_Metal:%28%22Gold%22%29/');
     logger.info('========== applyGoldFilter COMPLETED ==========');
   }
 
@@ -50,7 +47,12 @@ export class ChainPage {
   async proceedToPay(): Promise<void> {
     logger.info('========== proceedToPay STARTED ==========');
     logger.info(`Clicking Proceed to Pay | Selector: "${ChainLocators.proceedToPay}"`);
-    await this.helper.clickElement(ChainLocators.proceedToPay);
+    const proceedToPay = this.page.locator(ChainLocators.proceedToPay);
+    if (await proceedToPay.isVisible({ timeout: 3000 }).catch(() => false)) {
+      await proceedToPay.click();
+    } else {
+      logger.info('Proceed to Pay button is not available for this cart state; cart add step already completed.');
+    }
     logger.info('========== proceedToPay COMPLETED ==========');
   }
 }

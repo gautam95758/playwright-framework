@@ -3,9 +3,11 @@
   "version": "1.0.0",
   "description": "Playwright BDD automation for Reliance Jewels",
   "scripts": {
-    "test": "npx cucumber-js --config cucumber.config.js",
-    "test:headed": "cross-env HEADED=true npx cucumber-js --config cucumber.config.js",
-    "report": "npx cucumber-js --config cucumber.config.js"
+    "test": "cross-env PLAYWRIGHT_BROWSERS_PATH=0 npx cucumber-js --config cucumber.config.js && npm run report:html",
+    "test:headed": "cross-env PLAYWRIGHT_BROWSERS_PATH=0 HEADED=true npx cucumber-js --config cucumber.config.js",
+    "report": "cross-env PLAYWRIGHT_BROWSERS_PATH=0 npx cucumber-js --config cucumber.config.js && npm run report:html",
+    "report:html": "ts-node scripts/generateReport.ts",
+    "gemini:check": "ts-node scripts/checkGemini.ts"
   },
   "devDependencies": {
     "@cucumber/cucumber": "^10.0.0",
@@ -13,6 +15,7 @@
     "@types/node": "^20.0.0",
     "@types/winston": "^2.4.4",
     "cross-env": "^7.0.3",
+    "multiple-cucumber-html-reporter": "^3.10.0",
     "ts-node": "^10.9.0",
     "typescript": "^5.0.0"
   },
