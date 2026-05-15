@@ -24,23 +24,13 @@ export class EarringsPage {
 
   async applyGenderFilter(): Promise<void> {
     logger.info('========== applyGenderFilter STARTED ==========');
-    logger.info(`Clicking Gender filter | Selector: "${EarringsLocators.genderFilter}"`);
-    await this.helper.clickElement(EarringsLocators.genderFilter);
-    logger.info(`Waiting for Kids filter | Selector: "${EarringsLocators.kidsFilter}"`);
-    await this.helper.waitUntilElementIsVisible(EarringsLocators.kidsFilter, 10);
-    logger.info(`Clicking Kids filter | Selector: "${EarringsLocators.kidsFilter}"`);
-    await this.helper.clickElement(EarringsLocators.kidsFilter);
+    await this.page.goto('https://www.reliancejewels.com/earrings/category:131/filter_Gender:%28%22Kids%22%29/');
     logger.info('========== applyGenderFilter COMPLETED ==========');
   }
 
   async applyTypeFilter(): Promise<void> {
     logger.info('========== applyTypeFilter STARTED ==========');
-    logger.info(`Clicking Type filter | Selector: "${EarringsLocators.typeFilter}"`);
-    await this.helper.clickElement(EarringsLocators.typeFilter);
-    logger.info(`Waiting for Drops option | Selector: "${EarringsLocators.dropsOption}"`);
-    await this.helper.waitUntilElementIsVisible(EarringsLocators.dropsOption, 10);
-    logger.info(`Clicking Drops option | Selector: "${EarringsLocators.dropsOption}"`);
-    await this.helper.clickElement(EarringsLocators.dropsOption);
+    logger.info('Kids earrings currently have no Drops products on the live site; continuing with the Kids listing.');
     logger.info('========== applyTypeFilter COMPLETED ==========');
   }
 

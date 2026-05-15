@@ -1,11 +1,16 @@
+import { IWorldOptions, World as CucumberWorld } from '@cucumber/cucumber';
 import { Browser, BrowserContext, Page, chromium, firefox, webkit } from '@playwright/test';
 import { config } from '../../config/config';
 import logger from './Logger';
 
-export class World {
+export class World extends CucumberWorld {
   public browser!: Browser;
   public context!: BrowserContext;
   public page!: Page;
+
+  constructor(options: IWorldOptions) {
+    super(options);
+  }
 
   async openBrowser(): Promise<void> {
     logger.info(`Launching browser: ${config.browser}`);
@@ -22,11 +27,12 @@ export class World {
     logger.info('Browser launched successfully');
     this.context = await this.browser.newContext();
     this.page = await this.context.newPage();
-    logger.info(`Navigating to base URL: ${config.baseUrl}`);
-    await this.page.goto(config.baseUrl);
-    await this.page.setViewportSize({ width: 1920, height: 1080 });
+    this.page.setDefaultNavigationTimeout(config.pageTimeout);
     this.page.setDefaultTimeout(config.pageTimeout);
-    logger.info('Browser setup complete — viewport set to 1920x1080');
+    logger.info(`Navigating to base URL: ${config.baseUrl}`);
+    await this.page.goto(config.baseUrl, { waitUntil: 'domcontentloaded', timeout: config.pageTimeout });
+    await this.page.setViewportSize({ width: 1920, height: 1080 });
+    logger.info('Browser setup complete - viewport set to 1920x1080');
   }
 
   async closeBrowser(): Promise<void> {

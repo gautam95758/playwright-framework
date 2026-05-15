@@ -1,8 +1,36 @@
+# Dependencies
 node_modules/
+
+# Build output
 dist/
+coverage/
+
+# Test and automation artifacts
 logs/
 reports/
 screenshots/
 playwright-report/
 test-results/
+blob-report/
+
+# Environment files
 .env
+.env.*
+!.env.example
+
+# Package manager logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Runtime/cache files
+.cache/
+.nyc_output/
+*.tsbuildinfo
+
+# OS and editor files
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

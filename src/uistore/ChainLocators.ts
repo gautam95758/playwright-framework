@@ -1,6 +1,6 @@
 export const ChainLocators = {
-  chainMenu:          "a[href*='/chains' i]",
-  goldFilter:         "a[title='Chains - Gold']",
+  chainMenu:          "xpath=(//a[contains(@class,'dropdown-toggle') and normalize-space()='Chain'])[1]",
+  goldFilter:         "a[href*='filter_Metal'][href*='Gold']",
   firstProduct:       "xpath=(//a[@class='tooltip_18'])[1]",
   addToCart:          "div[id='btnBuyNowC'][class='btnaddtocart']",
   proceedToPay:       "a[id='proceedToPayButton']",

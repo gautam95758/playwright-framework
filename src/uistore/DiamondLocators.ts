@@ -1,5 +1,5 @@
 export const DiamondLocators = {
-  diamondMenu:        "a[href*='/diamond' i]",
+  diamondMenu:        "xpath=(//a[normalize-space()='Diamond' and contains(@href,'category:133')])[1]",
   shapeFilter:        "div[title='Diamond - Shape']",
   roundShape:         "a[title='Diamond - Round']",
   firstProduct:       "xpath=(//a[@class='tooltip_18'])[1]",
