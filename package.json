@@ -3,18 +3,25 @@
   "version": "1.0.0",
   "description": "Playwright BDD automation for Reliance Jewels",
   "scripts": {
+    "bdd:gen": "bddgen",
     "test": "ts-node scripts/runTests.ts",
-    "test:headed": "cross-env PLAYWRIGHT_BROWSERS_PATH=0 HEADED=true npx cucumber-js --config cucumber.config.js",
-    "report": "ts-node scripts/runTests.ts",
+    "heal": "ts-node scripts/geminiHealAndRerun.ts",
+    "test:heal": "ts-node scripts/runTests.ts || ts-node scripts/geminiHealAndRerun.ts",
+    "test:ui": "bddgen && npx playwright test --ui",
+    "test:headed": "cross-env HEADED=true bddgen && npx playwright test --headed",
+    "scan": "ts-node scripts/locatorHealthCheck.ts",
+    "report": "ts-node scripts/generateReport.ts",
     "report:html": "ts-node scripts/generateReport.ts",
-    "gemini:check": "ts-node scripts/checkGemini.ts"
+    "gemini:check": "ts-node scripts/checkGemini.ts",
+    "ai:locators": "ts-node scripts/generateLocators.ts",
+    "ai:missing-tests": "ts-node scripts/generateMissingTests.ts"
   },
   "devDependencies": {
-    "@cucumber/cucumber": "^10.0.0",
-    "@playwright/test": "^1.40.0",
+    "@playwright/test": "^1.56.1",
     "@types/node": "^20.0.0",
     "@types/winston": "^2.4.4",
     "cross-env": "^7.0.3",
+    "playwright-bdd": "^9.1.0",
     "ts-node": "^10.9.0",
     "typescript": "^5.0.0"
   },

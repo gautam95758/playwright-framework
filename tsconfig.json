@@ -2,11 +2,18 @@
   "compilerOptions": {
     "target": "ES2020",
     "module": "commonjs",
-    "strict": false,
+    "strict": true,
     "esModuleInterop": true,
     "outDir": "./dist",
     "rootDir": "./",
-    "resolveJsonModule": true
+    "resolveJsonModule": true,
+    "moduleResolution": "node",
+    "types": ["node", "@playwright/test"]
   },
-  "include": ["src/**/*", "config/**/*", "cucumber.config.ts"]
+  "include": [
+    "playwright.config.ts",
+    "config/**/*",
+    "scripts/**/*",
+    "src/**/*"
+  ]
 }

@@ -1,33 +1,28 @@
-import { Given, When, Then } from '@cucumber/cucumber';
-import { World } from '../utils/World';
-import { BuyPendentsPage } from '../pages/BuyPendentsPage';
+import { createBdd } from 'playwright-bdd';
+import { test } from '../utils/World';
 
-Given('the user hovers over pendents', async function (this: World) {
-  const page = new BuyPendentsPage(this.page);
-  await page.hoverOverPendents();
+const { Given, When, Then } = createBdd(test);
+
+Given('the user hovers over pendents', async ({ buyPendentsPage }) => {
+  await buyPendentsPage.hoverOverPendents();
 });
 
-When('the user applies the gender filter', async function (this: World) {
-  const page = new BuyPendentsPage(this.page);
-  await page.genderFilter();
+When('the user applies the gender filter', async ({ buyPendentsPage }) => {
+  await buyPendentsPage.genderFilter();
 });
 
-Then('the user selects additional filters', async function (this: World) {
-  const page = new BuyPendentsPage(this.page);
-  await page.moreFilter();
+Then('the user selects additional filters', async ({ buyPendentsPage }) => {
+  await buyPendentsPage.moreFilter();
 });
 
-Then('the user clicks on the first product displayed', async function (this: World) {
-  const page = new BuyPendentsPage(this.page);
-  await page.firstProductClick();
+Then('the user clicks on the first product displayed', async ({ buyPendentsPage }) => {
+  await buyPendentsPage.firstProductClick();
 });
 
-Then('the user adds the selected product to the cart', async function (this: World) {
-  const page = new BuyPendentsPage(this.page);
-  await page.addToCart();
+Then('the user adds the selected product to the cart', async ({ buyPendentsPage }) => {
+  await buyPendentsPage.addToCart();
 });
 
-Then('the user proceeds to the payment page', async function (this: World) {
-  const page = new BuyPendentsPage(this.page);
-  await page.proceedToPay();
+Then('the user proceeds to the payment page', async ({ buyPendentsPage }) => {
+  await buyPendentsPage.proceedToPay();
 });

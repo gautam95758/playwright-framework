@@ -1,45 +1,83 @@
-import { IWorldOptions, World as CucumberWorld } from '@cucumber/cucumber';
-import { Browser, BrowserContext, Page, chromium, firefox, webkit } from '@playwright/test';
-import { config } from '../../config/config';
+import { Page, TestInfo } from '@playwright/test';
+import { test as base } from 'playwright-bdd';
+import { BuyPendentsPage } from '../pages/BuyPendentsPage';
+import { BuyRingsPage } from '../pages/BuyRingsPage';
+import { ChainPage } from '../pages/ChainPage';
+import { DiamondPage } from '../pages/DiamondPage';
+import { EarringsPage } from '../pages/EarringsPage';
+import { FooterPage } from '../pages/FooterPage';
+import { NecklacePage } from '../pages/NecklacePage';
+import { PlatinumRingPage } from '../pages/PlatinumRingPage';
+import { VivahamPage } from '../pages/VivahamPage';
 import logger from './Logger';
 
-export class World extends CucumberWorld {
-  public browser!: Browser;
-  public context!: BrowserContext;
-  public page!: Page;
+export type ScenarioContext = {
+  scenarioName: string;
+  featureFile: string;
+  consoleErrors: string[];
+  failedStepText?: string;
+  lastScreenshotPath?: string;
+};
 
-  constructor(options: IWorldOptions) {
-    super(options);
-  }
+export type BddFixtures = {
+  scenarioContext: ScenarioContext;
+  buyPendentsPage: BuyPendentsPage;
+  buyRingsPage: BuyRingsPage;
+  chainPage: ChainPage;
+  diamondPage: DiamondPage;
+  earringsPage: EarringsPage;
+  footerPage: FooterPage;
+  necklacePage: NecklacePage;
+  platinumRingPage: PlatinumRingPage;
+  vivahamPage: VivahamPage;
+};
 
-  async openBrowser(): Promise<void> {
-    logger.info(`Launching browser: ${config.browser}`);
-    const browserType = config.browser.toLowerCase();
+export const test = base.extend<BddFixtures>({
+  scenarioContext: async ({ page, $bddContext, $testInfo }, use) => {
+    const consoleErrors: string[] = [];
+    const onConsole = (message: { type(): string; text(): string }) => {
+      if (message.type() === 'error') {
+        consoleErrors.push(message.text());
+      }
+    };
 
-    if (browserType === 'firefox') {
-      this.browser = await firefox.launch({ headless: config.headless });
-    } else if (browserType === 'webkit') {
-      this.browser = await webkit.launch({ headless: config.headless });
-    } else {
-      this.browser = await chromium.launch({ headless: config.headless });
-    }
+    page.on('console', onConsole);
+    await use({
+      scenarioName: $testInfo.title || 'Unnamed scenario',
+      featureFile: $bddContext.featureUri,
+      consoleErrors,
+    });
+    page.off('console', onConsole);
+  },
 
-    logger.info('Browser launched successfully');
-    this.context = await this.browser.newContext();
-    this.page = await this.context.newPage();
-    this.page.setDefaultNavigationTimeout(config.pageTimeout);
-    this.page.setDefaultTimeout(config.pageTimeout);
-    logger.info(`Navigating to base URL: ${config.baseUrl}`);
-    await this.page.goto(config.baseUrl, { waitUntil: 'domcontentloaded', timeout: config.pageTimeout });
-    await this.page.setViewportSize({ width: 1920, height: 1080 });
-    logger.info('Browser setup complete - viewport set to 1920x1080');
-  }
+  buyPendentsPage: async ({ page }, use) => use(new BuyPendentsPage(page)),
+  buyRingsPage: async ({ page }, use) => use(new BuyRingsPage(page)),
+  chainPage: async ({ page }, use) => use(new ChainPage(page)),
+  diamondPage: async ({ page }, use) => use(new DiamondPage(page)),
+  earringsPage: async ({ page }, use) => use(new EarringsPage(page)),
+  footerPage: async ({ page }, use) => use(new FooterPage(page)),
+  necklacePage: async ({ page }, use) => use(new NecklacePage(page)),
+  platinumRingPage: async ({ page }, use) => use(new PlatinumRingPage(page)),
+  vivahamPage: async ({ page }, use) => use(new VivahamPage(page)),
+});
 
-  async closeBrowser(): Promise<void> {
-    logger.info('Closing browser...');
-    await this.page?.close();
-    await this.context?.close();
-    await this.browser?.close();
-    logger.info('Browser closed successfully');
-  }
+export type BddTest = typeof test;
+
+export async function attachText(testInfo: TestInfo, name: string, body: string): Promise<void> {
+  await testInfo.attach(name, {
+    body,
+    contentType: 'text/plain',
+  });
+}
+
+export async function attachHtml(testInfo: TestInfo, name: string, body: string): Promise<void> {
+  await testInfo.attach(name, {
+    body,
+    contentType: 'text/html',
+  });
+}
+
+export async function gotoBaseUrl(page: Page): Promise<void> {
+  logger.info('Navigating to configured baseURL');
+  await page.goto('/', { waitUntil: 'domcontentloaded' });
 }

@@ -15,6 +15,8 @@ reports/                Test results and custom HTML report
 screenshots/            Screenshots captured during execution
 ```
 
+Generated folders such as `.features-gen/`, `reports/`, `test-results/`, `logs/`, and `screenshots/` are ignored by git and can be safely recreated by a test run.
+
 ## Setup
 
 Install project dependencies:
@@ -35,6 +37,21 @@ Run the full test suite and generate the custom report:
 
 ```bash
 npm test
+```
+
+The test command runs these phases in order:
+
+```text
+1. BDD spec generation
+2. Playwright execution
+3. AI trend summary
+4. Custom HTML report generation
+```
+
+Run the optional locator health scan separately when you want locator diagnostics:
+
+```bash
+npm run scan
 ```
 
 Run in headed mode:
@@ -65,6 +82,8 @@ reports/html/index.html
 
 The report includes scenario totals, pass/fail charts, feature breakdowns, step details, screenshots, and failure information.
 
+The old Cucumber HTML report has been removed. The framework keeps only the Cucumber JSON output because the custom dashboard uses it as input.
+
 ## Current Feature Files
 
 ```text
@@ -80,6 +99,7 @@ features/Vivaham.feature
 
 - `npm test` always generates the custom report after the run, even if a scenario fails.
 - Screenshots are saved under `screenshots/` and copied into the report artifacts.
-- Gemini analysis is skipped unless `GEMINI_API_KEY` is configured.
+- Gemini failure analysis is skipped unless `GEMINI_API_KEY` is configured.
+- Gemini visual diff is opt-in with `GEMINI_VISUAL_DIFF=true` so quota errors do not block normal execution.
 
 Designed by Gautam Rawat (Quality Engineer)

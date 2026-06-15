@@ -1,38 +1,32 @@
-import { Given, When, Then } from '@cucumber/cucumber';
-import { World } from '../utils/World';
-import { BuyRingsPage } from '../pages/BuyRingsPage';
+import { createBdd } from 'playwright-bdd';
+import { test } from '../utils/World';
 
-Given('the user initiates the search functionality', async function (this: World) {
-  const page = new BuyRingsPage(this.page);
-  await page.searchForItem('');
+const { Given, When, Then } = createBdd(test);
+
+Given('the user initiates the search functionality', async ({ buyRingsPage }) => {
+  await buyRingsPage.searchForItem('');
 });
 
-When('the user inputs {string} into the designated search field', async function (this: World, item: string) {
-  const page = new BuyRingsPage(this.page);
-  await page.typeInSearchBar(item);
+When('the user inputs {string} into the designated search field', async ({ buyRingsPage }, item: string) => {
+  await buyRingsPage.typeInSearchBar(item);
 });
 
-When('the user confirms the search by pressing the Enter key', async function (this: World) {
-  const page = new BuyRingsPage(this.page);
-  await page.pressEnterOnSearch();
+When('the user confirms the search by pressing the Enter key', async ({ buyRingsPage }) => {
+  await buyRingsPage.pressEnterOnSearch();
 });
 
-Then('the user applies the gender-specific filter', async function (this: World) {
-  const page = new BuyRingsPage(this.page);
-  await page.applyGenderFilter();
+Then('the user applies the gender-specific filter', async ({ buyRingsPage }) => {
+  await buyRingsPage.applyGenderFilter();
 });
 
-Then('the user selects the preferred metal category', async function (this: World) {
-  const page = new BuyRingsPage(this.page);
-  await page.applyMetalFilter();
+Then('the user selects the preferred metal category', async ({ buyRingsPage }) => {
+  await buyRingsPage.applyMetalFilter();
 });
 
-Then('the user identifies and clicks on the first product displayed in the results', async function (this: World) {
-  const page = new BuyRingsPage(this.page);
-  await page.clickFirstProduct();
+Then('the user identifies and clicks on the first product displayed in the results', async ({ buyRingsPage }) => {
+  await buyRingsPage.clickFirstProduct();
 });
 
-Then('the user proceeds to add the selected item to the shopping cart', async function (this: World) {
-  const page = new BuyRingsPage(this.page);
-  await page.addToCart();
+Then('the user proceeds to add the selected item to the shopping cart', async ({ buyRingsPage }) => {
+  await buyRingsPage.addToCart();
 });

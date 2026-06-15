@@ -1,274 +1,375 @@
-import { Page, Locator } from '@playwright/test';
+import fs from 'fs';
+import path from 'path';
+import { expect, Locator, Page } from '@playwright/test';
+import { config } from '../../config/config';
 import logger from './Logger';
-import { geminiFailureAnalyzer } from './GeminiFailureAnalyzer';
+import { geminiFailureAnalyzer, SelectorSuggestion } from './GeminiFailureAnalyzer';
+
+type SelectorOrLocator = string | Locator;
 
 export class PlaywrightHelper {
-  private page: Page;
-
-  constructor(page: Page) {
-    this.page = page;
+  constructor(private readonly page: Page) {
     logger.info('PlaywrightHelper initialized');
   }
 
-  async waitUntilElementIsVisible(selector: string, timeoutInSeconds = 20): Promise<void> {
-    logger.info(`Waiting for element to be visible | Selector: "${selector}" | Timeout: ${timeoutInSeconds}s`);
-    try {
-      await this.page.locator(selector).waitFor({ state: 'visible', timeout: timeoutInSeconds * 1000 });
-      logger.info(`Element is now visible | Selector: "${selector}"`);
-    } catch (e) {
-      logger.error(`Element NOT visible after ${timeoutInSeconds}s | Selector: "${selector}" | Error: ${(e as Error).message}`);
-      await this.analyzeLocatorFailure('waitUntilElementIsVisible', selector, e as Error);
-      throw e;
-    }
+  async waitUntilElementIsVisible(selectorOrLocator: SelectorOrLocator, timeoutInSeconds = 20): Promise<void> {
+    await this.withHealing(
+      'waitUntilElementIsVisible',
+      selectorOrLocator,
+      async (locator) => {
+        await expect(locator).toBeVisible({ timeout: timeoutInSeconds * 1000 });
+      },
+      timeoutInSeconds,
+    );
   }
 
-  async clickElement(selector: string): Promise<void> {
-    logger.info(`Attempting to click element | Selector: "${selector}"`);
-    try {
-      const text = await this.page.locator(selector).innerText().catch(() => '');
-      await this.page.locator(selector).click();
-      logger.info(`Successfully clicked element | Selector: "${selector}" | Text: "${text.trim()}"`);
-    } catch (e) {
-      logger.error(`Failed to click element | Selector: "${selector}" | Error: ${(e as Error).message}`);
-      await this.analyzeLocatorFailure('clickElement', selector, e as Error);
-      throw e;
-    }
+  async clickElement(selectorOrLocator: SelectorOrLocator): Promise<void> {
+    await this.withHealing('clickElement', selectorOrLocator, async (locator) => {
+      await locator.click({ timeout: defaultActionTimeoutMs() });
+    });
   }
 
-  async typeIntoElement(selector: string, text: string): Promise<void> {
-    logger.info(`Attempting to type into element | Selector: "${selector}" | Value: "${text}"`);
-    try {
-      await this.page.locator(selector).fill(text);
-      logger.info(`Successfully typed into element | Selector: "${selector}" | Value: "${text}"`);
-    } catch (e) {
-      logger.error(`Failed to type into element | Selector: "${selector}" | Error: ${(e as Error).message}`);
-      await this.analyzeLocatorFailure('typeIntoElement', selector, e as Error);
-      throw e;
-    }
+  async typeIntoElement(selectorOrLocator: SelectorOrLocator, text: string): Promise<void> {
+    await this.withHealing('typeIntoElement', selectorOrLocator, async (locator) => {
+      await locator.fill(text, { timeout: defaultActionTimeoutMs() });
+    });
   }
 
-  async retrieveElementText(selector: string): Promise<string> {
-    logger.info(`Retrieving text from element | Selector: "${selector}"`);
-    try {
-      const text = await this.page.locator(selector).innerText();
-      logger.info(`Successfully retrieved text | Selector: "${selector}" | Text: "${text.trim()}"`);
-      return text;
-    } catch (e) {
-      logger.error(`Failed to retrieve text | Selector: "${selector}" | Error: ${(e as Error).message}`);
-      await this.analyzeLocatorFailure('retrieveElementText', selector, e as Error);
-      throw e;
-    }
+  async retrieveElementText(selectorOrLocator: SelectorOrLocator): Promise<string> {
+    return this.withHealing('retrieveElementText', selectorOrLocator, async (locator) => locator.innerText());
   }
 
-  async pressEnterKey(selector: string): Promise<void> {
-    logger.info(`Pressing ENTER key on element | Selector: "${selector}"`);
-    try {
-      await this.page.locator(selector).press('Enter');
-      logger.info(`Successfully pressed ENTER key | Selector: "${selector}"`);
-    } catch (e) {
-      logger.error(`Failed to press ENTER key | Selector: "${selector}" | Error: ${(e as Error).message}`);
-      await this.analyzeLocatorFailure('pressEnterKey', selector, e as Error);
-      throw e;
-    }
+  async pressEnterKey(selectorOrLocator: SelectorOrLocator): Promise<void> {
+    await this.withHealing('pressEnterKey', selectorOrLocator, async (locator) => {
+      await locator.press('Enter', { timeout: defaultActionTimeoutMs() });
+    });
   }
 
-  async hoverOnElement(selector: string): Promise<void> {
-    logger.info(`Attempting to hover over element | Selector: "${selector}"`);
-    try {
-      const text = await this.page.locator(selector).innerText().catch(() => '');
-      await this.page.locator(selector).hover();
-      logger.info(`Successfully hovered over element | Selector: "${selector}" | Text: "${text.trim()}"`);
-    } catch (e) {
-      logger.error(`Failed to hover over element | Selector: "${selector}" | Error: ${(e as Error).message}`);
-      await this.analyzeLocatorFailure('hoverOnElement', selector, e as Error);
-      throw e;
-    }
+  async hoverOnElement(selectorOrLocator: SelectorOrLocator): Promise<void> {
+    await this.withHealing('hoverOnElement', selectorOrLocator, async (locator) => {
+      await locator.hover({ timeout: defaultActionTimeoutMs() });
+    });
   }
 
   async switchToChildWindow(): Promise<Page> {
-    logger.info('Attempting to switch to child window');
-    try {
-      const [newPage] = await Promise.all([
-        this.page.context().waitForEvent('page'),
-      ]);
-      await newPage.waitForLoadState();
-      logger.info(`Successfully switched to child window | URL: "${newPage.url()}"`);
-      return newPage;
-    } catch (e) {
-      logger.error(`Failed to switch to child window | Error: ${(e as Error).message}`);
-      throw e;
-    }
-  }
-
-  async findElementsByXpath(xpath: string): Promise<Locator[]> {
-    logger.info(`Finding elements by XPath | XPath: "${xpath}"`);
-    try {
-      const locator = this.page.locator(`xpath=${xpath}`);
-      const count = await locator.count();
-      logger.info(`Found ${count} element(s) | XPath: "${xpath}"`);
-      return Array.from({ length: count }, (_, i) => locator.nth(i));
-    } catch (e) {
-      logger.error(`Failed to find elements | XPath: "${xpath}" | Error: ${(e as Error).message}`);
-      throw e;
-    }
+    const newPage = await this.page.context().waitForEvent('page');
+    await newPage.waitForLoadState();
+    logger.info(`Switched to child window | URL: "${newPage.url()}"`);
+    return newPage;
   }
 
   async scrollInWebPage(direction: 'vertical' | 'horizontal', pixels: number): Promise<void> {
-    logger.info(`Scrolling page | Direction: "${direction}" | Pixels: ${pixels}`);
-    try {
-      if (direction === 'vertical') {
-        await this.page.evaluate((px) => window.scrollBy(0, px), pixels);
-      } else {
-        await this.page.evaluate((px) => window.scrollBy(px, 0), pixels);
-      }
-      logger.info(`Successfully scrolled | Direction: "${direction}" | Pixels: ${pixels}`);
-    } catch (e) {
-      logger.error(`Failed to scroll | Direction: "${direction}" | Error: ${(e as Error).message}`);
-      throw e;
+    if (direction === 'vertical') {
+      await this.page.evaluate((px) => window.scrollBy(0, px), pixels);
+    } else {
+      await this.page.evaluate((px) => window.scrollBy(px, 0), pixels);
     }
   }
 
   async scrollInWebPageEnd(): Promise<void> {
-    logger.info('Scrolling to end of page');
-    try {
-      await this.page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
-      logger.info('Successfully scrolled to end of page');
-    } catch (e) {
-      logger.error(`Failed to scroll to end of page | Error: ${(e as Error).message}`);
-      throw e;
-    }
+    await this.page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
   }
 
   async scrollInWebPageTop(): Promise<void> {
-    logger.info('Scrolling to top of page');
-    try {
-      await this.page.evaluate(() => window.scrollTo(0, 0));
-      logger.info('Successfully scrolled to top of page');
-    } catch (e) {
-      logger.error(`Failed to scroll to top of page | Error: ${(e as Error).message}`);
-      throw e;
-    }
+    await this.page.evaluate(() => window.scrollTo(0, 0));
   }
 
-  async scrollInWebPageTillVisible(selector: string): Promise<void> {
-    logger.info(`Scrolling until element is visible | Selector: "${selector}"`);
-    try {
-      await this.page.locator(selector).scrollIntoViewIfNeeded();
-      logger.info(`Successfully scrolled element into view | Selector: "${selector}"`);
-    } catch (e) {
-      logger.error(`Failed to scroll element into view | Selector: "${selector}" | Error: ${(e as Error).message}`);
-      await this.analyzeLocatorFailure('scrollInWebPageTillVisible', selector, e as Error);
-      throw e;
-    }
+  async scrollInWebPageTillVisible(selectorOrLocator: SelectorOrLocator): Promise<void> {
+    await this.withHealing('scrollInWebPageTillVisible', selectorOrLocator, async (locator) => {
+      await locator.scrollIntoViewIfNeeded();
+    });
   }
 
-  async javascriptExecutorClick(selector: string): Promise<void> {
-    logger.info(`Attempting JavaScript click on element | Selector: "${selector}"`);
-    try {
-      const element = this.page.locator(selector);
-      await element.evaluate((el) => (el as HTMLElement).click());
-      logger.info(`Successfully performed JavaScript click | Selector: "${selector}"`);
-    } catch (e) {
-      logger.error(`Failed JavaScript click | Selector: "${selector}" | Error: ${(e as Error).message}`);
-      await this.analyzeLocatorFailure('javascriptExecutorClick', selector, e as Error);
-      throw e;
-    }
+  async javascriptExecutorClick(selectorOrLocator: SelectorOrLocator): Promise<void> {
+    await this.withHealing('javascriptExecutorClick', selectorOrLocator, async (locator) => {
+      await locator.evaluate((element) => (element as HTMLElement).click());
+    });
   }
 
-  async clearTextInputField(selector: string): Promise<void> {
-    logger.info(`Clearing input field | Selector: "${selector}"`);
-    try {
-      await this.page.locator(selector).clear();
-      logger.info(`Successfully cleared input field | Selector: "${selector}"`);
-    } catch (e) {
-      logger.error(`Failed to clear input field | Selector: "${selector}" | Error: ${(e as Error).message}`);
-      await this.analyzeLocatorFailure('clearTextInputField', selector, e as Error);
-      throw e;
-    }
+  async clearTextInputField(selectorOrLocator: SelectorOrLocator): Promise<void> {
+    await this.withHealing('clearTextInputField', selectorOrLocator, async (locator) => {
+      await locator.clear({ timeout: defaultActionTimeoutMs() });
+    });
+  }
+
+  async isElementVisible(selectorOrLocator: SelectorOrLocator): Promise<boolean> {
+    return this.getLocator(selectorOrLocator).isVisible().catch(() => false);
+  }
+
+  async isElementEnabled(selectorOrLocator: SelectorOrLocator): Promise<boolean> {
+    return this.getLocator(selectorOrLocator).isEnabled().catch(() => false);
+  }
+
+  async getElementCount(selectorOrLocator: SelectorOrLocator): Promise<number> {
+    return this.getLocator(selectorOrLocator).count();
+  }
+
+  async getAttribute(selectorOrLocator: SelectorOrLocator, attributeName: string): Promise<string | null> {
+    return this.getLocator(selectorOrLocator).getAttribute(attributeName);
   }
 
   async verifyEquals(actual: string, expected: string, description: string): Promise<void> {
-    logger.info(`Verifying equals | Description: "${description}"`);
-    logger.info(`  Expected : "${expected}"`);
-    logger.info(`  Actual   : "${actual}"`);
-    if (actual !== expected) {
-      logger.error(`ASSERTION FAILED | Description: "${description}" | Expected: "${expected}" | Actual: "${actual}"`);
-      throw new Error(`[FAIL] ${description}\n  Expected: "${expected}"\n  Actual:   "${actual}"`);
-    }
-    logger.info(`ASSERTION PASSED | Description: "${description}"`);
+    logger.info(`Assertion: ${description}`);
+    expect(actual, description).toBe(expected);
   }
 
   async verifyTrue(condition: boolean, description: string): Promise<void> {
-    logger.info(`Verifying condition is TRUE | Description: "${description}" | Condition: ${condition}`);
-    if (!condition) {
-      logger.error(`ASSERTION FAILED | Description: "${description}" | Condition was false`);
-      throw new Error(`[FAIL] ${description} - condition was false`);
-    }
-    logger.info(`ASSERTION PASSED | Description: "${description}"`);
+    logger.info(`Assertion: ${description}`);
+    expect(condition, description).toBeTruthy();
   }
 
   async verifyFalse(condition: boolean, description: string): Promise<void> {
-    logger.info(`Verifying condition is FALSE | Description: "${description}" | Condition: ${condition}`);
-    if (condition) {
-      logger.error(`ASSERTION FAILED | Description: "${description}" | Condition was true (expected false)`);
-      throw new Error(`[FAIL] ${description} - condition was true (expected false)`);
-    }
-    logger.info(`ASSERTION PASSED | Description: "${description}"`);
+    logger.info(`Assertion: ${description}`);
+    expect(condition, description).toBeFalsy();
   }
 
   async retryFailedTestCase(action: () => Promise<void>, maxRetries: number): Promise<void> {
-    logger.info(`Starting retry mechanism | Max retries: ${maxRetries}`);
     let lastError: Error | undefined;
-    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+
+    for (let attempt = 1; attempt <= maxRetries; attempt += 1) {
       try {
-        logger.info(`Retry attempt ${attempt} of ${maxRetries}`);
         await action();
-        logger.info(`Action succeeded on attempt ${attempt}`);
         return;
-      } catch (e) {
-        lastError = e as Error;
-        logger.error(`Attempt ${attempt} failed | Error: ${lastError.message}`);
+      } catch (error) {
+        lastError = error as Error;
+        logger.error(`Retry attempt ${attempt} failed | Error: ${lastError.message}`);
       }
     }
-    logger.error(`All ${maxRetries} attempts failed`);
+
     throw lastError;
   }
 
   async getPageTitle(): Promise<string> {
-    try {
-      const title = await this.page.title();
-      logger.info(`Retrieved page title | Title: "${title}"`);
-      return title;
-    } catch (e) {
-      logger.error(`Failed to get page title | Error: ${(e as Error).message}`);
-      throw e;
-    }
+    return this.page.title();
   }
 
   getCurrentUrl(): string {
-    const url = this.page.url();
-    logger.info(`Retrieved current URL | URL: "${url}"`);
-    return url;
+    return this.page.url();
   }
 
   async takeScreenshot(name: string): Promise<Buffer> {
-    logger.info(`Taking screenshot | Name: "${name}"`);
+    fs.mkdirSync('screenshots', { recursive: true });
+    return this.page.screenshot({ path: `screenshots/${name}.png`, fullPage: false });
+  }
+
+  private getLocator(selectorOrLocator: SelectorOrLocator): Locator {
+    return typeof selectorOrLocator === 'string' ? this.page.locator(selectorOrLocator) : selectorOrLocator;
+  }
+
+  private getDescription(selectorOrLocator: SelectorOrLocator): string {
+    return typeof selectorOrLocator === 'string' ? selectorOrLocator : selectorOrLocator.toString();
+  }
+
+  private async withHealing<T>(
+    action: string,
+    selectorOrLocator: SelectorOrLocator,
+    operation: (locator: Locator) => Promise<T>,
+    timeoutInSeconds?: number,
+  ): Promise<T> {
+    const failedSelector = this.getDescription(selectorOrLocator);
+    const locator = this.getLocator(selectorOrLocator);
+
+    logger.info(`Attempting ${action} | Selector: ${failedSelector}`);
+
     try {
-      const buffer = await this.page.screenshot({ path: `screenshots/${name}.png`, fullPage: false });
-      logger.info(`Screenshot saved successfully | Path: "screenshots/${name}.png"`);
-      return buffer;
-    } catch (e) {
-      logger.error(`Failed to take screenshot | Name: "${name}" | Error: ${(e as Error).message}`);
-      throw e;
+      return await operation(locator);
+    } catch (error) {
+      const originalError = error as Error;
+      logger.error(`${action} failed | Selector: ${failedSelector} | Error: ${originalError.message}`);
+
+      if (!config.gemini.selfHealEnabled || !geminiFailureAnalyzer.isLocatorOrWaitFailure(originalError)) {
+        throw originalError;
+      }
+
+      // Guard: page may have closed after timeout — cannot heal against a dead page
+      if (this.page.isClosed()) {
+        logger.warn(`[SELF-HEAL] Skipped — page is already closed after "${action}" failed on "${failedSelector}"`);
+        throw originalError;
+      }
+
+      const healed = await this.tryHeal({
+        action,
+        failedSelector,
+        originalError,
+        operation,
+        timeoutInSeconds,
+      });
+
+      if (healed.success) {
+        return healed.value as T;
+      }
+
+      throw originalError;
     }
   }
 
-  private async analyzeLocatorFailure(action: string, selector: string, error: Error): Promise<void> {
-    await geminiFailureAnalyzer.analyzeLocatorFailure({
-      page: this.page,
-      action,
-      selector,
-      error,
-    });
+  private async tryHeal<T>(input: {
+    action: string;
+    failedSelector: string;
+    originalError: Error;
+    operation: (locator: Locator) => Promise<T>;
+    timeoutInSeconds?: number;
+  }): Promise<{ success: boolean; value?: T }> {
+    const healingResult = await geminiFailureAnalyzer
+      .suggestSelectors({
+        page: this.page,
+        action: input.action,
+        failedSelector: input.failedSelector,
+        error: input.originalError,
+      })
+      .catch((error): Awaited<ReturnType<typeof geminiFailureAnalyzer.suggestSelectors>> => {
+        logger.error(`AI self-healing skipped | Selector: ${input.failedSelector} | Error: ${(error as Error).message}`);
+        return {};
+      });
+    const { suggestion, extraction, visionSuggestion } = healingResult;
+
+    if (visionSuggestion) {
+      logger.info(`[AI-SUGGEST] ${visionSuggestion}`);
+      return { success: false };
+    }
+
+    if (!suggestion) {
+      return { success: false };
+    }
+
+    if (suggestion.confidence < 0.7) {
+      logger.info(`[AI-SUGGEST] Low confidence (${suggestion.confidence}) - not auto-written, manual fix needed`);
+      return { success: false };
+    }
+
+    for (const selector of suggestion.suggestedSelectors) {
+      const locator = locatorFromSuggestion(this.page, selector);
+      if (!locator) {
+        continue;
+      }
+
+      try {
+        const value = await input.operation(locator);
+        const file = tryWriteLocatorReplacement(input.failedSelector, selector);
+
+        if (suggestion.confidence >= 0.9) {
+          logger.info(`[SELF-HEAL] ${input.failedSelector} -> ${selector}${file ? ` | Updated: ${file}` : ''}`);
+        } else {
+          logger.info(`[SELF-HEAL-REVIEW] Locator worked but confidence is ${suggestion.confidence}${file ? ` | Updated: ${file}` : ''}`);
+        }
+
+        return { success: true, value };
+      } catch {
+        logger.info(`Suggested selector did not work during retry: ${selector}`);
+      }
+    }
+
+    return { success: false };
   }
+}
+
+function locatorFromSuggestion(page: Page, suggestion: string): Locator | undefined {
+  const text = suggestion.trim();
+  const roleMatch = text.match(/getByRole\(\s*['"]([^'"]+)['"]\s*,\s*\{\s*name:\s*(\/.+\/[a-z]*|['"][^'"]+['"])/);
+  if (roleMatch?.[1] && roleMatch[2]) {
+    return page.getByRole(roleMatch[1] as Parameters<Page['getByRole']>[0], { name: parseName(roleMatch[2]) });
+  }
+
+  const placeholderMatch = matchSingleLocatorArg(text, 'getByPlaceholder');
+  if (placeholderMatch) {
+    return page.getByPlaceholder(parseName(placeholderMatch));
+  }
+
+  const textMatch = matchSingleLocatorArg(text, 'getByText');
+  if (textMatch) {
+    return page.getByText(parseName(textMatch));
+  }
+
+  const labelMatch = matchSingleLocatorArg(text, 'getByLabel');
+  if (labelMatch) {
+    return page.getByLabel(parseName(labelMatch));
+  }
+
+  const altTextMatch = matchSingleLocatorArg(text, 'getByAltText');
+  if (altTextMatch) {
+    return page.getByAltText(parseName(altTextMatch));
+  }
+
+  const titleMatch = matchSingleLocatorArg(text, 'getByTitle');
+  if (titleMatch) {
+    return page.getByTitle(parseName(titleMatch));
+  }
+
+  const testIdMatch = text.match(/getByTestId\(\s*['"]([^'"]+)['"]\s*\)/);
+  if (testIdMatch?.[1]) {
+    return page.getByTestId(testIdMatch[1]);
+  }
+
+  const locatorMatch = text.match(/locator\(\s*['"]([^'"]+)['"]\s*\)/);
+  if (locatorMatch?.[1]) {
+    return page.locator(locatorMatch[1]);
+  }
+
+  if (/^[.#\[\]a-z0-9_:-]/i.test(text) && !text.includes('(')) {
+    return page.locator(text);
+  }
+
+  return undefined;
+}
+
+function matchSingleLocatorArg(text: string, methodName: string): string | undefined {
+  const pattern = new RegExp(`${methodName}\\(\\s*(\\/.+\\/[a-z]*|['"][^'"]+['"])`);
+  return text.match(pattern)?.[1];
+}
+
+function parseName(value: string): string | RegExp {
+  if (value.startsWith('/')) {
+    const lastSlash = value.lastIndexOf('/');
+    return new RegExp(value.slice(1, lastSlash), value.slice(lastSlash + 1));
+  }
+
+  return value.slice(1, -1);
+}
+
+function defaultActionTimeoutMs(): number {
+  return Math.min(10000, Math.max(3000, Math.floor(config.pageTimeout / 3)));
+}
+
+function tryWriteLocatorReplacement(failedSelector: string, replacement: string): string | undefined {
+  const oldFragments = getOldSelectorFragments(failedSelector);
+  if (!oldFragments.length) {
+    return undefined;
+  }
+
+  const locatorDir = path.resolve('src', 'uistore');
+  const files = fs.readdirSync(locatorDir).filter((file) => file.endsWith('Locators.ts'));
+
+  for (const file of files) {
+    const filePath = path.join(locatorDir, file);
+    const lines = fs.readFileSync(filePath, 'utf8').split(/\r?\n/);
+    const lineIndex = lines.findIndex((line) => oldFragments.some((fragment) => line.includes(fragment)));
+
+    if (lineIndex === -1) {
+      continue;
+    }
+
+    const replacementExpression = `this.page.${replacement.replace(/^page\./, '')}`;
+    lines[lineIndex] = lines[lineIndex].includes('return ')
+      ? lines[lineIndex].replace(/return\s+.*;/, `return ${replacementExpression};`)
+      : lines[lineIndex].replace(/this\.page\..*/, `${replacementExpression};`);
+    fs.writeFileSync(filePath, lines.join('\n'), 'utf8');
+    return file;
+  }
+
+  return undefined;
+}
+
+function getOldSelectorFragments(failedSelector: string): string[] {
+  const locatorMatch = failedSelector.match(/locator\(['"]([^'"]+)['"]\)/);
+  if (locatorMatch?.[1]) {
+    return [locatorMatch[1], `locator('${locatorMatch[1]}')`, `locator("${locatorMatch[1]}")`];
+  }
+
+  const normalized = failedSelector.replace(/^page\./, '').trim();
+  const fragments = [normalized];
+  if (normalized.includes('(')) {
+    fragments.push(`this.page.${normalized}`);
+  }
+
+  return fragments.filter(Boolean);
 }

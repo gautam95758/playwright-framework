@@ -1,9 +1,36 @@
-export const ChainLocators = {
-  chainMenu:          "xpath=(//a[contains(@class,'dropdown-toggle') and normalize-space()='Chain'])[1]",
-  goldFilter:         "a[href*='filter_Metal'][href*='Gold']",
-  firstProduct:       "xpath=(//a[@class='tooltip_18'])[1]",
-  addToCart:          "div[id='btnBuyNowC'][class='btnaddtocart']",
-  proceedToPay:       "a[id='proceedToPayButton']",
-  lengthFilter:       "div[title='Chains - Length']",
-  weightFilter:       "div[title='Chains - Net Weight']",
-};
+import { Locator, Page } from '@playwright/test';
+import { CommonLocators } from './CommonLocators';
+
+export class ChainLocators extends CommonLocators {
+  constructor(page: Page) {
+    super(page);
+  }
+
+  get chainMenu(): Locator {
+    return this.page.getByRole('link', { name: /^chain$/i });
+  }
+
+  get goldFilter(): Locator {
+    return this.page.getByRole('link', { name: /gold/i }).first();
+  }
+
+  get lengthFilter(): Locator {
+    return this.page.getByRole('link', { name: /^length$/i });
+  }
+
+  get weightFilter(): Locator {
+    return this.page.getByRole('link', { name: /^weight$/i });
+  }
+
+  get firstProduct(): Locator {
+    return this.firstProductCardLink;
+  }
+
+  get addToCart(): Locator {
+    return this.addToCartAction;
+  }
+
+  get proceedToPay(): Locator {
+    return this.proceedToPayAction;
+  }
+}

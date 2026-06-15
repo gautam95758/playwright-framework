@@ -1,0 +1,23 @@
+{
+  "appName": "Reliance Jewels",
+  "domain": "jewellery e-commerce",
+  "preferredLocatorOrder": ["getByRole", "getByTestId", "css"],
+  "knownPatterns": [
+    {
+      "type": "navigation",
+      "pattern": "Top-level category links are exposed as role=link with visible category text."
+    },
+    {
+      "type": "filters",
+      "pattern": "Category filter links commonly expose title attributes containing '<Category> - <FilterValue>'."
+    },
+    {
+      "type": "search",
+      "pattern": "Search input is discoverable by placeholder text containing 'What are you searching for'."
+    },
+    {
+      "type": "checkout",
+      "pattern": "Checkout progression is exposed by link or button names containing 'Proceed to Pay'."
+    }
+  ]
+}

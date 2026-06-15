@@ -6,6 +6,7 @@ dist/
 coverage/
 
 # Test and automation artifacts
+.features-gen/
 logs/
 reports/
 screenshots/
@@ -13,25 +14,70 @@ playwright-report/
 test-results/
 blob-report/
 
-# Environment files
+# Environment files (sensitive data)
 .env
-.env.*
+.env.local
+.env.*.local
+.env.development.local
+.env.test.local
+.env.production.local
 !.env.example
+
+# Secrets and credentials
+.credentials
+*.key
+*.pem
+secrets/
 
 # Package manager logs
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
+lerna-debug.log*
 
 # Runtime/cache files
 .cache/
 .nyc_output/
 *.tsbuildinfo
+.eslintcache
 
 # OS and editor files
 .DS_Store
 Thumbs.db
 .idea/
 .vscode/
-.env
+.history/
+*.swp
+*.swo
+*~
+*.bak
+*.tmp
+
+# Editor backup files
+*.sublime-workspace
+.project
+.classpath
+.c9/
+
+# Test artifacts and reports
+excel/*.xlsx
+excel/*.xls
+excel/temp/
+
+# Local database or temp files
+*.db
+*.sqlite
+*.sqlite3
+local.db
+
+# IDE specific files
+.code-workspace
+
+# MacOS
+.AppleDouble
+.LSOverride
+._*
+
+# Windows
+desktop.ini

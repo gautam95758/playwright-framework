@@ -1,28 +1,24 @@
-import { Given, When, Then } from '@cucumber/cucumber';
-import { World } from '../utils/World';
-import { VivahamPage } from '../pages/VivahamPage';
+import { createBdd } from 'playwright-bdd';
+import { test } from '../utils/World';
 
-Given('the user navigates to vivaham section', async function (this: World) {
-  const page = new VivahamPage(this.page);
-  await page.navigateToVivaham();
+const { Given, When, Then } = createBdd(test);
+
+Given('the user navigates to vivaham section', async ({ vivahamPage }) => {
+  await vivahamPage.navigateToVivaham();
 });
 
-When('the user applies metal filter in vivaham', async function (this: World) {
-  const page = new VivahamPage(this.page);
-  await page.applyMetalFilter();
+When('the user applies metal filter in vivaham', async ({ vivahamPage }) => {
+  await vivahamPage.applyMetalFilter();
 });
 
-Then('the user clicks on the first vivaham product', async function (this: World) {
-  const page = new VivahamPage(this.page);
-  await page.clickFirstProduct();
+Then('the user clicks on the first vivaham product', async ({ vivahamPage }) => {
+  await vivahamPage.clickFirstProduct();
 });
 
-Then('the user adds the vivaham product to cart', async function (this: World) {
-  const page = new VivahamPage(this.page);
-  await page.addToCart();
+Then('the user adds the vivaham product to cart', async ({ vivahamPage }) => {
+  await vivahamPage.addToCart();
 });
 
-Then('the user proceeds to pay for vivaham product', async function (this: World) {
-  const page = new VivahamPage(this.page);
-  await page.proceedToPay();
+Then('the user proceeds to pay for vivaham product', async ({ vivahamPage }) => {
+  await vivahamPage.proceedToPay();
 });
