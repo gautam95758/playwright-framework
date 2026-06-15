@@ -5,8 +5,10 @@ if (!fs.existsSync('./logs')) {
   fs.mkdirSync('./logs', { recursive: true });
 }
 
-fs.writeFileSync('./logs/error.log', '', 'utf8');
-fs.writeFileSync('./logs/test.log', '', 'utf8');
+if (process.env.LOG_RESET === 'true') {
+  fs.writeFileSync('./logs/error.log', '', 'utf8');
+  fs.writeFileSync('./logs/test.log', '', 'utf8');
+}
 
 const logger = createLogger({
   level: 'info',

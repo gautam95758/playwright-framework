@@ -1,9 +1,36 @@
-export const NecklaceLocators = {
-  necklaceMenu:       "xpath=(//a[contains(@class,'dropdown-toggle') and normalize-space()='Necklaces'])[1]",
-  firstProduct:       "xpath=(//a[@class='tooltip_18'])[1]",
-  addToCart:          "div[id='btnBuyNowC'][class='btnaddtocart']",
-  myCart:             "a[href='/cart']",
-  cartItems:          "xpath=//div[@class='cart-item']",
-  proceedToPay:       "a[id='proceedToPayButton']",
-  tableHeadingPrice:  "xpath=//th[text()='Unit Price']",
-};
+import { Locator, Page } from '@playwright/test';
+import { CommonLocators } from './CommonLocators';
+
+export class NecklaceLocators extends CommonLocators {
+  constructor(page: Page) {
+    super(page);
+  }
+
+  get necklaceMenu(): Locator {
+    return this.page.getByRole('link', { name: /necklaces?/i }).first();
+  }
+
+  get myCart(): Locator {
+    return this.page.getByRole('link', { name: /cart/i });
+  }
+
+  get cartItems(): Locator {
+    return this.page.getByRole('row').filter({ hasText: /unit price|qty|quantity|total/i });
+  }
+
+  get firstProduct(): Locator {
+    return this.firstProductCardLink;
+  }
+
+  get addToCart(): Locator {
+    return this.addToCartAction;
+  }
+
+  get proceedToPay(): Locator {
+    return this.proceedToPayAction;
+  }
+
+  get tableHeadingPrice(): Locator {
+    return this.unitPriceHeading;
+  }
+}

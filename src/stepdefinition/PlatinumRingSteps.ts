@@ -1,28 +1,24 @@
-import { Given, When, Then } from '@cucumber/cucumber';
-import { World } from '../utils/World';
-import { PlatinumRingPage } from '../pages/PlatinumRingPage';
+import { createBdd } from 'playwright-bdd';
+import { test } from '../utils/World';
 
-Given('the user navigates to the rings section', async function (this: World) {
-  const page = new PlatinumRingPage(this.page);
-  await page.navigateToRings();
+const { Given, When, Then } = createBdd(test);
+
+Given('the user navigates to the rings section', async ({ platinumRingPage }) => {
+  await platinumRingPage.navigateToRings();
 });
 
-When('the user applies the platinum filter', async function (this: World) {
-  const page = new PlatinumRingPage(this.page);
-  await page.applyPlatinumFilter();
+When('the user applies the platinum filter', async ({ platinumRingPage }) => {
+  await platinumRingPage.applyPlatinumFilter();
 });
 
-Then('the user clicks on the first platinum ring', async function (this: World) {
-  const page = new PlatinumRingPage(this.page);
-  await page.clickFirstProduct();
+Then('the user clicks on the first platinum ring', async ({ platinumRingPage }) => {
+  await platinumRingPage.clickFirstProduct();
 });
 
-Then('the user adds the platinum ring to the cart', async function (this: World) {
-  const page = new PlatinumRingPage(this.page);
-  await page.addToCart();
+Then('the user adds the platinum ring to the cart', async ({ platinumRingPage }) => {
+  await platinumRingPage.addToCart();
 });
 
-Then('the user proceeds to pay for the platinum ring', async function (this: World) {
-  const page = new PlatinumRingPage(this.page);
-  await page.proceedToPay();
+Then('the user proceeds to pay for the platinum ring', async ({ platinumRingPage }) => {
+  await platinumRingPage.proceedToPay();
 });

@@ -1,28 +1,24 @@
-import { Given, When, Then } from '@cucumber/cucumber';
-import { World } from '../utils/World';
-import { NecklacePage } from '../pages/NecklacePage';
+import { createBdd } from 'playwright-bdd';
+import { test } from '../utils/World';
 
-Given('the user navigates to the necklace section', async function (this: World) {
-  const page = new NecklacePage(this.page);
-  await page.navigateToNecklace();
+const { Given, Then } = createBdd(test);
+
+Given('the user navigates to the necklace section', async ({ necklacePage }) => {
+  await necklacePage.navigateToNecklace();
 });
 
-Then('the user clicks on the first necklace product', async function (this: World) {
-  const page = new NecklacePage(this.page);
-  await page.clickFirstProduct();
+Then('the user clicks on the first necklace product', async ({ necklacePage }) => {
+  await necklacePage.clickFirstProduct();
 });
 
-Then('the user adds the necklace to the cart', async function (this: World) {
-  const page = new NecklacePage(this.page);
-  await page.addToCart();
+Then('the user adds the necklace to the cart', async ({ necklacePage }) => {
+  await necklacePage.addToCart();
 });
 
-Then('the user verifies the cart', async function (this: World) {
-  const page = new NecklacePage(this.page);
-  await page.verifyCart();
+Then('the user verifies the cart', async ({ necklacePage }) => {
+  await necklacePage.verifyCart();
 });
 
-Then('the user proceeds to pay for the necklace', async function (this: World) {
-  const page = new NecklacePage(this.page);
-  await page.proceedToPay();
+Then('the user proceeds to pay for the necklace', async ({ necklacePage }) => {
+  await necklacePage.proceedToPay();
 });

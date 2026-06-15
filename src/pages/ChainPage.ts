@@ -6,53 +6,53 @@ import logger from '../utils/Logger';
 export class ChainPage {
   private helper: PlaywrightHelper;
   private page: Page;
+  private locators: ChainLocators;
 
   constructor(page: Page) {
     this.page = page;
     this.helper = new PlaywrightHelper(page);
+    this.locators = new ChainLocators(page);
     logger.info('ChainPage initialized');
   }
 
   async navigateToChain(): Promise<void> {
-    logger.info('========== navigateToChain STARTED ==========');
-    logger.info(`Hovering over Chains menu | Selector: "${ChainLocators.chainMenu}"`);
-    await this.helper.hoverOnElement(ChainLocators.chainMenu);
-    logger.info(`Clicking Chains menu | Selector: "${ChainLocators.chainMenu}"`);
-    await this.helper.clickElement(ChainLocators.chainMenu);
-    logger.info('========== navigateToChain COMPLETED ==========');
+    logger.info('Hovering over Chains menu');
+    await this.helper.hoverOnElement(this.locators.chainMenu);
+    logger.info('Clicking Chains menu');
+    await this.helper.clickElement(this.locators.chainMenu);
   }
 
   async applyGoldFilter(): Promise<void> {
-    logger.info('========== applyGoldFilter STARTED ==========');
-    await this.page.goto('https://www.reliancejewels.com/chain/category:146/filter_Metal:%28%22Gold%22%29/');
-    logger.info('========== applyGoldFilter COMPLETED ==========');
+    try {
+      await this.page.goto('/chain/category:146/filter_Metal:%28%22Gold%22%29/', {
+        waitUntil: 'domcontentloaded',
+      });
+      await this.helper.waitUntilElementIsVisible(this.locators.firstProduct, 20);
+      logger.info('Applied Gold filter');
+    } catch (error) {
+      logger.error(`Filter application failed: ${error}`);
+      throw error;
+    }
   }
 
   async clickFirstProduct(): Promise<void> {
-    logger.info('========== clickFirstProduct STARTED ==========');
-    logger.info(`Clicking first chain product | Selector: "${ChainLocators.firstProduct}"`);
-    await this.helper.clickElement(ChainLocators.firstProduct);
-    logger.info('========== clickFirstProduct COMPLETED ==========');
+    logger.info('Clicking first chain product');
+    await this.helper.clickElement(this.locators.firstProduct);
   }
 
   async addToCart(): Promise<void> {
-    logger.info('========== addToCart STARTED ==========');
-    logger.info(`Clicking Add to Cart | Selector: "${ChainLocators.addToCart}"`);
-    await this.helper.clickElement(ChainLocators.addToCart);
+    logger.info('Clicking Add to Cart');
+    await this.helper.clickElement(this.locators.addToCart);
     logger.info('Taking screenshot after adding chain to cart');
     await this.helper.takeScreenshot('addToCart-chain');
-    logger.info('========== addToCart COMPLETED ==========');
   }
 
   async proceedToPay(): Promise<void> {
-    logger.info('========== proceedToPay STARTED ==========');
-    logger.info(`Clicking Proceed to Pay | Selector: "${ChainLocators.proceedToPay}"`);
-    const proceedToPay = this.page.locator(ChainLocators.proceedToPay);
-    if (await proceedToPay.isVisible({ timeout: 3000 }).catch(() => false)) {
-      await proceedToPay.click();
+    logger.info('Clicking Proceed to Pay');
+    const proceedToPay = this.locators.proceedToPay;
+    if (await this.helper.isElementVisible(proceedToPay)) {
+      await this.helper.clickElement(proceedToPay);
     } else {
-      logger.info('Proceed to Pay button is not available for this cart state; cart add step already completed.');
     }
-    logger.info('========== proceedToPay COMPLETED ==========');
   }
 }

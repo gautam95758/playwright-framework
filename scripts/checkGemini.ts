@@ -7,7 +7,7 @@ async function main(): Promise<void> {
 
   const response = await geminiClient.generateText('Reply with exactly: GEMINI_OK', {
     temperature: 0,
-    maxOutputTokens: 20,
+    maxOutputTokens: 128,
   });
 
   if (!response.includes('GEMINI_OK')) {

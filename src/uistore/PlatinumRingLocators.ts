@@ -1,9 +1,36 @@
-export const PlatinumRingLocators = {
-  ringsMenu:          "xpath=(//a[contains(@class,'dropdown-toggle') and normalize-space()='Rings'])[1]",
-  metalFilter:        "div[title='Rings - Metal']",
-  platinumOption:     "a[href*='filter_Metal'][href*='Platinum']",
-  firstProduct:       "xpath=(//a[@class='tooltip_18'])[1]",
-  addToCart:          "div[id='btnBuyNowC'][class='btnaddtocart']",
-  proceedToPay:       "a[id='proceedToPayButton']",
-  priceFilter:        "div[title='Rings - Price']",
-};
+import { Locator, Page } from '@playwright/test';
+import { CommonLocators } from './CommonLocators';
+
+export class PlatinumRingLocators extends CommonLocators {
+  constructor(page: Page) {
+    super(page);
+  }
+
+  get ringsMenu(): Locator {
+    return this.page.getByRole('link', { name: /^rings$/i });
+  }
+
+  get metalFilter(): Locator {
+    return this.page.getByRole('link', { name: /^metal$/i });
+  }
+
+  get platinumOption(): Locator {
+    return this.page.getByRole('link', { name: /platinum/i }).first();
+  }
+
+  get priceFilter(): Locator {
+    return this.page.getByRole('link', { name: /^price$/i });
+  }
+
+  get firstProduct(): Locator {
+    return this.firstProductCardLink;
+  }
+
+  get addToCart(): Locator {
+    return this.addToCartAction;
+  }
+
+  get proceedToPay(): Locator {
+    return this.proceedToPayAction;
+  }
+}

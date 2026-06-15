@@ -1,28 +1,24 @@
-import { Given, When, Then } from '@cucumber/cucumber';
-import { World } from '../utils/World';
-import { EarringsPage } from '../pages/EarringsPage';
+import { createBdd } from 'playwright-bdd';
+import { test } from '../utils/World';
 
-Given('the user navigates to the earrings section', async function (this: World) {
-  const page = new EarringsPage(this.page);
-  await page.navigateToEarrings();
+const { Given, When, Then } = createBdd(test);
+
+Given('the user navigates to the earrings section', async ({ earringsPage }) => {
+  await earringsPage.navigateToEarrings();
 });
 
-When('the user applies gender filter for earrings', async function (this: World) {
-  const page = new EarringsPage(this.page);
-  await page.applyGenderFilter();
+When('the user applies gender filter for earrings', async ({ earringsPage }) => {
+  await earringsPage.applyGenderFilter();
 });
 
-Then('the user applies type filter for earrings', async function (this: World) {
-  const page = new EarringsPage(this.page);
-  await page.applyTypeFilter();
+Then('the user applies type filter for earrings', async ({ earringsPage }) => {
+  await earringsPage.applyTypeFilter();
 });
 
-Then('the user clicks on the first earring product', async function (this: World) {
-  const page = new EarringsPage(this.page);
-  await page.clickFirstProduct();
+Then('the user clicks on the first earring product', async ({ earringsPage }) => {
+  await earringsPage.clickFirstProduct();
 });
 
-Then('the user adds the earring to the cart', async function (this: World) {
-  const page = new EarringsPage(this.page);
-  await page.addToCart();
+Then('the user adds the earring to the cart', async ({ earringsPage }) => {
+  await earringsPage.addToCart();
 });
